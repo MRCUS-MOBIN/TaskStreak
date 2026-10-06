@@ -1,0 +1,62 @@
+<div class="auth-wrapper">
+  <div class="auth-card card">
+    <div class="auth-brand">
+      <div class="brand-logo">🔥</div>
+      <h2>TaskStreak</h2>
+      <p>Plan tonight. Complete tomorrow. Build your streak.</p>
+    </div>
+
+    <div class="auth-tabs">
+      <button [class.active]="!isRegister" (click)="switchMode(false)">Log In</button>
+      <button [class.active]="isRegister" (click)="switchMode(true)">Register</button>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <div *ngIf="!isRegister" class="auth-form">
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" [(ngModel)]="loginEmail" placeholder="e.g. mobin@taskstreak.app" />
+      </div>
+
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" [(ngModel)]="loginPass" placeholder="••••••••" />
+      </div>
+
+      <button class="btn-primary btn-block" (click)="onLogin()">
+        Log In to TaskStreak
+      </button>
+
+      <div class="demo-hint">
+        <span>💡 Demo Account Pre-filled. Click <strong>Log In</strong> to test!</span>
+      </div>
+    </div>
+
+    <!-- REGISTER FORM -->
+    <div *ngIf="isRegister" class="auth-form">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" [(ngModel)]="regName" placeholder="e.g. Mobin" />
+      </div>
+
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" [(ngModel)]="regEmail" placeholder="name@example.com" />
+      </div>
+
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" [(ngModel)]="regPass" placeholder="Minimum 6 characters" />
+      </div>
+
+      <div class="form-group">
+        <label>Confirm Password</label>
+        <input type="password" [(ngModel)]="regConfirmPass" placeholder="Repeat password" />
+      </div>
+
+      <button class="btn-primary btn-block" (click)="onRegister()">
+        Create Free Account
+      </button>
+    </div>
+  </div>
+</div>

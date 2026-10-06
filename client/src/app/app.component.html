@@ -1,0 +1,113 @@
+<!-- Toast Container -->
+<div class="toast-container">
+  <div *ngFor="let toast of toasts" class="toast-item" [class]="toast.type">
+    <span class="toast-icon">
+      <ng-container [ngSwitch]="toast.type">
+        <span *ngSwitchCase="'success'">✅</span>
+        <span *ngSwitchCase="'warning'">⚠️</span>
+        <span *ngSwitchCase="'error'">❌</span>
+        <span *ngSwitchDefault>ℹ️</span>
+      </ng-container>
+    </span>
+    <span class="toast-msg">{{ toast.message }}</span>
+    <button class="toast-close" (click)="dismissToast(toast.id)">✕</button>
+  </div>
+</div>
+
+<!-- Main App Layout Shell -->
+<div class="app-layout" *ngIf="currentUser; else authView">
+  <!-- Desktop Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-flame">🔥</div>
+      <div class="brand-text">
+        <h2>TaskStreak</h2>
+        <span>Daily Productivity Engine</span>
+      </div>
+    </div>
+
+    <!-- Streak Badge Box in Sidebar -->
+    <div class="sidebar-streak-box">
+      <div class="streak-fire-icon">🔥</div>
+      <div class="streak-info">
+        <span class="streak-count">{{ currentUser?.currentStreak || 0 }} Days</span>
+        <span class="streak-lbl">Current Daily Streak</span>
+      </div>
+    </div>
+
+    <!-- Navigation Menu -->
+    <nav class="sidebar-nav">
+      <button class="nav-btn" [class.active]="activeView === 'dashboard'" (click)="navigate('dashboard')">
+        <span class="nav-icon">☀️</span>
+        <span class="nav-label">Today's Tasks</span>
+      </button>
+
+      <button class="nav-btn" [class.active]="activeView === 'tomorrow'" (click)="navigate('tomorrow')">
+        <span class="nav-icon">🌙</span>
+        <span class="nav-label">Plan Tomorrow</span>
+        <span class="nav-badge">USP</span>
+      </button>
+
+      <button class="nav-btn" [class.active]="activeView === 'calendar'" (click)="navigate('calendar')">
+        <span class="nav-icon">📅</span>
+        <span class="nav-label">Calendar</span>
+      </button>
+
+      <button class="nav-btn" [class.active]="activeView === 'analytics'" (click)="navigate('analytics')">
+        <span class="nav-icon">📊</span>
+        <span class="nav-label">Analytics</span>
+      </button>
+
+      <button class="nav-btn" [class.active]="activeView === 'profile'" (click)="navigate('profile')">
+        <span class="nav-icon">👤</span>
+        <span class="nav-label">Profile & Settings</span>
+      </button>
+    </nav>
+
+    <!-- User Profile Quick Footer -->
+    <div class="sidebar-footer">
+      <div class="user-quick" (click)="navigate('profile')">
+        <div class="avatar-mini">{{ userInitial }}</div>
+        <div class="user-details">
+          <strong>{{ currentUser?.name || 'Mobin' }}</strong>
+          <small>{{ currentUser?.email || 'mobin@taskstreak.app' }}</small>
+        </div>
+      </div>
+      <button class="logout-btn" (click)="logout()" title="Log out">🚪</button>
+    </div>
+  </aside>
+
+  <!-- Mobile Top Bar -->
+  <div class="mobile-topbar">
+    <div class="mobile-brand" (click)="navigate('dashboard')">
+      <span>🔥</span> <strong>TaskStreak</strong>
+    </div>
+    <div class="mobile-actions">
+      <span class="mobile-streak">🔥 {{ currentUser?.currentStreak || 0 }}d</span>
+      <button class="menu-toggle" (click)="mobileMenuOpen = !mobileMenuOpen">☰</button>
+    </div>
+  </div>
+
+  <!-- Mobile Menu Drawer -->
+  <div class="mobile-drawer" *ngIf="mobileMenuOpen">
+    <button [class.active]="activeView === 'dashboard'" (click)="navigate('dashboard')">☀️ Today's Tasks</button>
+    <button [class.active]="activeView === 'tomorrow'" (click)="navigate('tomorrow')">🌙 Plan Tomorrow</button>
+    <button [class.active]="activeView === 'calendar'" (click)="navigate('calendar')">📅 Calendar</button>
+    <button [class.active]="activeView === 'analytics'" (click)="navigate('analytics')">📊 Analytics</button>
+    <button [class.active]="activeView === 'profile'" (click)="navigate('profile')">👤 Profile & Settings</button>
+    <button class="logout-mobile" (click)="logout()">🚪 Log Out</button>
+  </div>
+
+  <!-- Main View Workspace -->
+  <main class="main-content">
+    <app-dashboard *ngIf="activeView === 'dashboard'" (navigateTo)="navigate($event)"></app-dashboard>
+    <app-plan-tomorrow *ngIf="activeView === 'tomorrow'"></app-plan-tomorrow>
+    <app-calendar *ngIf="activeView === 'calendar'"></app-calendar>
+    <app-analytics *ngIf="activeView === 'analytics'"></app-analytics>
+    <app-profile *ngIf="activeView === 'profile'"></app-profile>
+  </main>
+</div>
+
+<ng-template #authView>
+  <app-auth (loggedIn)="navigate('dashboard')"></app-auth>
+</ng-template>

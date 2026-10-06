@@ -1,0 +1,137 @@
+<div class="tomorrow-planner-container">
+  <!-- Night Header Banner -->
+  <header class="card night-hero-card">
+    <div class="night-hero-badge">🌙 NIGHT PLANNING LOCK</div>
+    <h1>Plan Tomorrow's Blueprint</h1>
+    <p class="date-str">Target Date: <strong>{{ tomorrowFormatted }}</strong> ({{ tomorrowStr }})</p>
+    <div class="lock-notice">
+      <span class="icon">{{ planLocked ? '🔐' : '🔒' }}</span>
+      <span *ngIf="planLocked">This plan is locked. Task details can no longer be changed.</span>
+      <span *ngIf="!planLocked">Tasks planned tonight will automatically become your active <strong>Today's Tasks</strong> at 12:00 AM.</span>
+    </div>
+  </header>
+
+  <div class="planner-grid">
+    <!-- Task Creation Form -->
+    <div class="card planner-form-card">
+      <div class="card-header">
+        <h3>➕ Add Task to Tomorrow</h3>
+        <p>Set priorities and mark required tasks for streak retention</p>
+      </div>
+
+      <div class="form-body">
+        <div class="form-group">
+          <label>Task Title *</label>
+          <input type="text" [(ngModel)]="title" [disabled]="planLocked" placeholder="e.g. Solve 2 Java LeetCode Problems" />
+        </div>
+
+        <div class="form-group">
+          <label>Description / Sub-goals</label>
+          <textarea [(ngModel)]="description" [disabled]="planLocked" placeholder="Specify key notes, topics, or links..." rows="2"></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Priority</label>
+            <select [(ngModel)]="priority" [disabled]="planLocked">
+              <option value="HIGH">🔴 High Priority</option>
+              <option value="MEDIUM">🟠 Medium Priority</option>
+              <option value="LOW">🟢 Low Priority</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Category</label>
+            <select [(ngModel)]="category" [disabled]="planLocked">
+              <option *ngFor="let cat of categories" [value]="cat">
+                {{ getCategoryIcon(cat) }} {{ cat }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Est. Duration (Mins)</label>
+            <input type="number" [(ngModel)]="estimatedMinutes" min="5" step="5" [disabled]="planLocked" />
+          </div>
+
+          <div class="form-group check-group">
+            <label class="checkbox-container">
+              <input type="checkbox" [(ngModel)]="requiredForStreak" [disabled]="planLocked" />
+              <span class="checkmark"></span>
+              <span class="label-text">🔥 Required for Streak</span>
+            </label>
+          </div>
+        </div>
+
+        <button class="btn-primary btn-block" (click)="addTask()" [disabled]="planLocked">
+          + Add Task to Tomorrow
+        </button>
+      </div>
+    </div>
+
+    <!-- Live Preview of Planned Tasks -->
+    <div class="card planner-preview-card">
+      <div class="preview-header">
+        <div>
+          <h3>📋 Tomorrow's Schedule</h3>
+          <p>{{ tomorrowTasks.length }} task(s) queued for {{ tomorrowStr }}</p>
+        </div>
+        <button class="btn-success" (click)="savePlan()" [disabled]="tomorrowTasks.length === 0 || planLocked">
+          {{ planLocked ? '🔐 Plan Locked' : '🔒 Lock & Save Plan' }}
+        </button>
+      </div>
+
+      <div *ngIf="tomorrowTasks.length === 0" class="empty-preview">
+        <div class="icon">🌙</div>
+        <h4>Tomorrow is Empty</h4>
+        <p>Plan your tasks tonight so you start tomorrow with full clarity and zero friction!</p>
+      </div>
+
+      <div class="preview-list" *ngIf="tomorrowTasks.length > 0">
+        <!-- High Priority -->
+        <div class="preview-group" *ngIf="highPriorityTasks.length > 0">
+          <div class="group-tag high">🔴 High Priority ({{ highPriorityTasks.length }})</div>
+          <div *ngFor="let task of highPriorityTasks" class="preview-item">
+            <div class="item-left">
+              <strong>{{ task.title }}</strong>
+              <small>{{ getCategoryIcon(task.category) }} {{ task.category }} · ⏱️ {{ task.estimatedMinutes }}m
+                <span class="req" *ngIf="task.requiredForStreak"> · 🔥 Required</span>
+              </small>
+            </div>
+            <button class="btn-del" (click)="deleteTask(task)" [disabled]="planLocked">✕</button>
+          </div>
+        </div>
+
+        <!-- Medium Priority -->
+        <div class="preview-group" *ngIf="mediumPriorityTasks.length > 0">
+          <div class="group-tag medium">🟠 Medium Priority ({{ mediumPriorityTasks.length }})</div>
+          <div *ngFor="let task of mediumPriorityTasks" class="preview-item">
+            <div class="item-left">
+              <strong>{{ task.title }}</strong>
+              <small>{{ getCategoryIcon(task.category) }} {{ task.category }} · ⏱️ {{ task.estimatedMinutes }}m
+                <span class="req" *ngIf="task.requiredForStreak"> · 🔥 Required</span>
+              </small>
+            </div>
+            <button class="btn-del" (click)="deleteTask(task)" [disabled]="planLocked">✕</button>
+          </div>
+        </div>
+
+        <!-- Low Priority -->
+        <div class="preview-group" *ngIf="lowPriorityTasks.length > 0">
+          <div class="group-tag low">🟢 Low Priority ({{ lowPriorityTasks.length }})</div>
+          <div *ngFor="let task of lowPriorityTasks" class="preview-item">
+            <div class="item-left">
+              <strong>{{ task.title }}</strong>
+              <small>{{ getCategoryIcon(task.category) }} {{ task.category }} · ⏱️ {{ task.estimatedMinutes }}m
+                <span class="req" *ngIf="task.requiredForStreak"> · 🔥 Required</span>
+              </small>
+            </div>
+            <button class="btn-del" (click)="deleteTask(task)" [disabled]="planLocked">✕</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

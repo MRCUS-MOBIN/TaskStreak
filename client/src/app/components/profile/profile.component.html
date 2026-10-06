@@ -1,0 +1,109 @@
+<div class="profile-page-container">
+  <!-- Profile Hero Header -->
+  <header class="card profile-hero-card">
+    <div class="profile-header-content">
+      <div class="user-avatar-circle">
+        {{ userInitials }}
+      </div>
+      <div class="user-info-text">
+        <h2>{{ user?.name || 'Mobin' }}</h2>
+        <p class="email-sub">{{ user?.email || 'mobin@taskstreak.app' }}</p>
+        <span class="member-tag">🔥 TaskStreak Pro Member</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Badges & Achievements -->
+  <div class="card badges-card">
+    <div class="card-header">
+      <h3>🏆 Productivity Badges</h3>
+      <p>Milestones earned through consistency and task completion</p>
+    </div>
+
+    <div class="badges-grid">
+      <div class="badge-item" [class.unlocked]="(user?.longestStreak || 0) >= 7">
+        <div class="badge-icon">🔥</div>
+        <div class="badge-details">
+          <h4>7-Day Streak Master</h4>
+          <p>Maintained a 7-day required task streak</p>
+        </div>
+      </div>
+
+      <div class="badge-item" [class.unlocked]="nightPlannerUnlocked">
+        <div class="badge-icon">🌙</div>
+        <div class="badge-details">
+          <h4>Night Planner</h4>
+          <p>Planned tasks the night before for tomorrow</p>
+        </div>
+      </div>
+
+      <div class="badge-item" [class.unlocked]="highAchieverUnlocked">
+        <div class="badge-icon">🎯</div>
+        <div class="badge-details">
+          <h4>High Achiever</h4>
+          <p>Achieved 80%+ overall task completion rate</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="profile-forms-grid">
+    <!-- Edit Profile Info -->
+    <div class="card form-card">
+      <div class="card-header">
+        <h3>👤 Edit Account Details</h3>
+      </div>
+      <div class="form-body">
+        <div class="form-group">
+          <label>Current Password</label>
+          <input type="password" [(ngModel)]="oldPass" placeholder="Enter current password" />
+        </div>
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" [(ngModel)]="name" placeholder="Your name" />
+        </div>
+
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" [(ngModel)]="email" placeholder="Your email" />
+        </div>
+
+        <button class="btn-primary" (click)="saveProfile()">Save Profile</button>
+      </div>
+    </div>
+
+    <!-- Security & Preferences -->
+    <div class="card form-card">
+      <div class="card-header">
+        <h3>🔐 Security & Preferences</h3>
+      </div>
+      <div class="form-body">
+        <div class="form-group">
+          <label>New Password</label>
+          <input type="password" [(ngModel)]="newPass" placeholder="Enter new password" />
+        </div>
+
+        <div class="form-group">
+          <label>Confirm New Password</label>
+          <input type="password" [(ngModel)]="confirmPass" placeholder="Confirm new password" />
+        </div>
+
+        <div class="action-buttons-stack">
+          <button class="btn-secondary" (click)="changePassword()">Update Password</button>
+          
+          <button class="btn-secondary btn-notif" (click)="toggleNotifications()">
+            🔔 {{ browserNotificationsEnabled ? 'Browser Notifications Enabled' : 'Enable Browser Notifications' }}
+          </button>
+
+          <button class="btn-secondary btn-reset" (click)="refreshTasks()">
+            🔄 Refresh Tasks From Server
+          </button>
+
+          <button class="btn-danger" (click)="logout()">
+            🚪 Log Out
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

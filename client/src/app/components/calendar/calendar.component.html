@@ -1,0 +1,119 @@
+<div class="calendar-page-container">
+  <!-- Calendar Header & Navigation -->
+  <header class="card calendar-header">
+    <div class="header-title">
+      <h2>📅 Productivity Calendar</h2>
+      <p>Visual monthly timeline of your completed and required tasks</p>
+    </div>
+
+    <div class="calendar-controls">
+      <button class="btn-secondary" (click)="prevMonth()">‹ Prev</button>
+      <span class="month-label">{{ displayMonthStr }}</span>
+      <button class="btn-secondary" (click)="nextMonth()">Next ›</button>
+      <button class="btn-primary" (click)="goToToday()">Today</button>
+    </div>
+  </header>
+
+  <!-- Status Legend -->
+  <div class="card legend-card">
+    <div class="legend-title">Legend:</div>
+    <div class="legend-items">
+      <div class="legend-item"><span class="dot full"></span> 🟢 Fully Completed</div>
+      <div class="legend-item"><span class="dot partial"></span> 🟡 Partially Completed</div>
+      <div class="legend-item"><span class="dot missed"></span> 🔴 Missed Required Tasks</div>
+      <div class="legend-item"><span class="dot empty"></span> ⚪ No Tasks Planned</div>
+    </div>
+  </div>
+
+  <!-- Calendar Grid -->
+  <div class="card calendar-grid-card">
+    <div class="weekdays-row">
+      <div *ngFor="let day of weekDays" class="weekday-cell">{{ day }}</div>
+    </div>
+
+    <div class="days-grid">
+      <div
+        *ngFor="let day of calendarDays"
+        class="day-cell"
+        [class.other-month]="!day.isCurrentMonth"
+        [class.today]="day.isToday"
+        [class]="getStatusBadgeClass(day.progress.status)"
+        (click)="selectDate(day.dateStr)"
+      >
+        <div class="day-num-row">
+          <span class="day-num">{{ day.dayNumber }}</span>
+          <span class="status-indicator">{{ getStatusIcon(day.progress.status) }}</span>
+        </div>
+
+        <div class="day-stats" *ngIf="day.progress.totalTasks > 0">
+          <span class="task-count-pill">
+            {{ day.progress.completedTasks }}/{{ day.progress.totalTasks }}
+          </span>
+          <span class="req-mini" *ngIf="day.progress.requiredTasks > 0">
+            🔥 {{ day.progress.completedRequiredTasks }}/{{ day.progress.requiredTasks }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DAY DETAIL MODAL -->
+  <div class="modal-backdrop" *ngIf="showDayModal" (click)="closeModal()">
+    <div class="modal-card card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <h3>📅 Tasks for {{ selectedDayProgress?.date }}</h3>
+          <p class="modal-sub">
+            Status: <strong>{{ getStatusIcon(selectedDayProgress?.status || '') }} {{ selectedDayProgress?.status }}</strong>
+          </p>
+        </div>
+        <button class="close-btn" (click)="closeModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="modal-summary-box">
+          <div>
+            <strong>{{ selectedDayProgress?.completedTasks }} / {{ selectedDayProgress?.totalTasks }}</strong>
+            <span>Completed</span>
+          </div>
+          <div>
+            <strong>{{ selectedDayProgress?.completionRate }}%</strong>
+            <span>Rate</span>
+          </div>
+          <div>
+            <strong>{{ selectedDayProgress?.completedRequiredTasks }} / {{ selectedDayProgress?.requiredTasks }}</strong>
+            <span>Required Done</span>
+          </div>
+        </div>
+
+        <div *ngIf="selectedDayTasks.length === 0" class="empty-day-modal">
+          No tasks were planned for this date.
+        </div>
+
+        <div class="day-task-list" *ngIf="selectedDayTasks.length > 0">
+          <div *ngFor="let task of selectedDayTasks" class="task-item-card" [class.completed]="task.status === 'COMPLETED'">
+            <div class="task-details">
+              <div class="task-title-row">
+                <span class="priority-dot" [class.high]="task.priority === 'HIGH'" [class.medium]="task.priority === 'MEDIUM'" [class.low]="task.priority === 'LOW'"></span>
+                <strong [class.strike]="task.status === 'COMPLETED'">{{ task.title }}</strong>
+                <span class="streak-req-tag" *ngIf="task.requiredForStreak">🔥 Required</span>
+              </div>
+              <p *ngIf="task.description" class="task-desc">{{ task.description }}</p>
+              <div class="task-meta">
+                <span>{{ task.category }}</span>
+                <span>⏱️ {{ task.estimatedMinutes }} mins</span>
+                <span class="status-tag" [class.done]="task.status === 'COMPLETED'">
+                  {{ task.status === 'COMPLETED' ? '✅ Completed' : '⏳ Pending' }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-primary" (click)="closeModal()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>

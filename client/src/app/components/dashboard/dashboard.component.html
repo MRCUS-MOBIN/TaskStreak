@@ -1,0 +1,308 @@
+<div class="dashboard-container">
+  <!-- Header & Greeting -->
+  <header class="dash-header card-banner">
+    <div class="header-left">
+      <span class="date-badge">📅 {{ todayFormatted }}</span>
+      <h1 class="greeting">{{ greeting }}, {{ currentUser?.name || 'Productive User' }} 👋</h1>
+      <p class="sub-greeting">Master your day. Complete required tasks to keep your streak alive!</p>
+    </div>
+    <div class="header-right">
+      <button class="btn-primary btn-glow" (click)="openAddModal()">
+        <span class="icon">+</span> Add Today's Task
+      </button>
+    </div>
+  </header>
+
+  <!-- Night Planning Reminder Banner -->
+  <div class="night-banner card-glow" *ngIf="!isTomorrowPlanned">
+    <div class="night-banner-content">
+      <div class="night-icon">🌙</div>
+      <div>
+        <h3>Plan Tomorrow's Productivity</h3>
+        <p>You haven't set your tasks for tomorrow yet. Lock them in tonight for maximum focus tomorrow morning!</p>
+      </div>
+    </div>
+    <button class="btn-night" (click)="navigateTo.emit('tomorrow')">
+      Plan Tomorrow →
+    </button>
+  </div>
+
+  <!-- Key Metrics Row -->
+  <div class="stats-grid">
+    <div class="stat-card streak-card">
+      <div class="stat-header">
+        <span class="stat-icon">🔥</span>
+        <span class="stat-label">Current Streak</span>
+      </div>
+      <div class="stat-value">{{ currentUser?.currentStreak || 0 }} <small>Days</small></div>
+      <div class="stat-footer positive">
+        <span>🏆 Longest: {{ currentUser?.longestStreak || 0 }} Days</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-header">
+        <span class="stat-icon">✅</span>
+        <span class="stat-label">Today's Progress</span>
+      </div>
+      <div class="stat-value">{{ completedTasksCount }} / {{ totalTasksCount }}</div>
+      <div class="stat-footer">
+        <span>{{ pendingTasksCount }} Tasks Pending</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-header">
+        <span class="stat-icon">🎯</span>
+        <span class="stat-label">Completion Rate</span>
+      </div>
+      <div class="stat-value">{{ completionPercentage }}%</div>
+      <div class="mini-progress-bar">
+        <div class="bar-fill" [style.width.%]="completionPercentage"></div>
+      </div>
+    </div>
+
+    <div class="stat-card required-status-card" [class.earned]="isStreakEarned">
+      <div class="stat-header">
+        <span class="stat-icon">{{ isStreakEarned ? '⚡' : '⚠️' }}</span>
+        <span class="stat-label">Required Tasks</span>
+      </div>
+      <div class="stat-value">{{ completedRequiredCount }} / {{ totalRequiredCount }}</div>
+      <div class="stat-footer">
+        <span *ngIf="isStreakEarned" class="badge-earned">🔥 Streak Ready!</span>
+        <span *ngIf="!isStreakEarned" class="badge-needed">Complete {{ totalRequiredCount - completedRequiredCount }} more task(s)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Progress Bar Bar Card -->
+  <div class="card progress-overview-card">
+    <div class="progress-title-row">
+      <div class="progress-info">
+        <h3>Today's Completion Progress</h3>
+        <p>{{ completedTasksCount }} of {{ totalTasksCount }} tasks completed today</p>
+      </div>
+      <div class="progress-percent-badge">{{ completionPercentage }}%</div>
+    </div>
+    <div class="main-progress-track">
+      <div class="main-progress-bar" [style.width.%]="completionPercentage"></div>
+    </div>
+  </div>
+
+  <!-- Filters & Controls -->
+  <div class="filter-controls-row card">
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="text" [(ngModel)]="searchQuery" (input)="applyFilters()" placeholder="Search tasks by title or description..." />
+    </div>
+
+    <div class="filter-selects">
+      <select [(ngModel)]="selectedPriority" (change)="applyFilters()">
+        <option value="ALL">All Priorities</option>
+        <option value="HIGH">🔴 High Priority</option>
+        <option value="MEDIUM">🟠 Medium Priority</option>
+        <option value="LOW">🟢 Low Priority</option>
+      </select>
+
+      <select [(ngModel)]="selectedCategory" (change)="applyFilters()">
+        <option value="ALL">All Categories</option>
+        <option *ngFor="let cat of categories" [value]="cat">
+          {{ getCategoryIcon(cat) }} {{ cat }}
+        </option>
+      </select>
+
+      <select [(ngModel)]="selectedStatus" (change)="applyFilters()">
+        <option value="ALL">All Status</option>
+        <option value="PENDING">⏳ Pending</option>
+        <option value="COMPLETED">✅ Completed</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Task Groups Section -->
+  <div class="task-sections">
+    <!-- Empty State -->
+    <div *ngIf="filteredTasks.length === 0" class="card empty-state-card">
+      <div class="empty-icon">📭</div>
+      <h3>No Tasks Found</h3>
+      <p>There are no tasks matching your selected filters for today.</p>
+      <button class="btn-secondary" (click)="openAddModal()">+ Add New Task</button>
+    </div>
+
+    <!-- HIGH PRIORITY SECTION -->
+    <div class="priority-group" *ngIf="highPriorityTasks.length > 0">
+      <div class="group-header high">
+        <div class="group-title">
+          <span class="priority-dot high"></span>
+          <h2>🔴 HIGH PRIORITY</h2>
+          <span class="count-badge">{{ highPriorityTasks.length }}</span>
+        </div>
+        <span class="group-hint">Must complete for streak focus</span>
+      </div>
+
+      <div class="task-list">
+        <div *ngFor="let task of highPriorityTasks" class="task-item-card" [class.completed]="task.status === 'COMPLETED'">
+          <div class="task-check">
+            <input type="checkbox" [id]="'check_' + task.id" [checked]="task.status === 'COMPLETED'" (change)="toggleComplete(task)" />
+            <label [for]="'check_' + task.id"></label>
+          </div>
+
+          <div class="task-details">
+            <div class="task-title-row">
+              <h4 [class.strike]="task.status === 'COMPLETED'">{{ task.title }}</h4>
+              <span class="streak-req-tag" *ngIf="task.requiredForStreak">🔥 Required</span>
+            </div>
+            <p class="task-desc" *ngIf="task.description">{{ task.description }}</p>
+            <div class="task-meta">
+              <span class="cat-badge">{{ getCategoryIcon(task.category) }} {{ task.category }}</span>
+              <span class="time-badge" *ngIf="task.estimatedMinutes">⏱️ {{ task.estimatedMinutes }} mins</span>
+            </div>
+          </div>
+
+          <div class="task-actions">
+            <button class="btn-icon" (click)="openEditModal(task)" title="Edit Task" [disabled]="!canManageTask(task)">✏️</button>
+            <button class="btn-icon danger" (click)="deleteTask(task)" title="Delete Task" [disabled]="!canManageTask(task)">🗑️</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEDIUM PRIORITY SECTION -->
+    <div class="priority-group" *ngIf="mediumPriorityTasks.length > 0">
+      <div class="group-header medium">
+        <div class="group-title">
+          <span class="priority-dot medium"></span>
+          <h2>🟠 MEDIUM PRIORITY</h2>
+          <span class="count-badge">{{ mediumPriorityTasks.length }}</span>
+        </div>
+      </div>
+
+      <div class="task-list">
+        <div *ngFor="let task of mediumPriorityTasks" class="task-item-card" [class.completed]="task.status === 'COMPLETED'">
+          <div class="task-check">
+            <input type="checkbox" [id]="'check_' + task.id" [checked]="task.status === 'COMPLETED'" (change)="toggleComplete(task)" />
+            <label [for]="'check_' + task.id"></label>
+          </div>
+
+          <div class="task-details">
+            <div class="task-title-row">
+              <h4 [class.strike]="task.status === 'COMPLETED'">{{ task.title }}</h4>
+              <span class="streak-req-tag" *ngIf="task.requiredForStreak">🔥 Required</span>
+            </div>
+            <p class="task-desc" *ngIf="task.description">{{ task.description }}</p>
+            <div class="task-meta">
+              <span class="cat-badge">{{ getCategoryIcon(task.category) }} {{ task.category }}</span>
+              <span class="time-badge" *ngIf="task.estimatedMinutes">⏱️ {{ task.estimatedMinutes }} mins</span>
+            </div>
+          </div>
+
+          <div class="task-actions">
+            <button class="btn-icon" (click)="openEditModal(task)" title="Edit Task" [disabled]="!canManageTask(task)">✏️</button>
+            <button class="btn-icon danger" (click)="deleteTask(task)" title="Delete Task" [disabled]="!canManageTask(task)">🗑️</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOW PRIORITY SECTION -->
+    <div class="priority-group" *ngIf="lowPriorityTasks.length > 0">
+      <div class="group-header low">
+        <div class="group-title">
+          <span class="priority-dot low"></span>
+          <h2>🟢 LOW PRIORITY</h2>
+          <span class="count-badge">{{ lowPriorityTasks.length }}</span>
+        </div>
+      </div>
+
+      <div class="task-list">
+        <div *ngFor="let task of lowPriorityTasks" class="task-item-card" [class.completed]="task.status === 'COMPLETED'">
+          <div class="task-check">
+            <input type="checkbox" [id]="'check_' + task.id" [checked]="task.status === 'COMPLETED'" (change)="toggleComplete(task)" />
+            <label [for]="'check_' + task.id"></label>
+          </div>
+
+          <div class="task-details">
+            <div class="task-title-row">
+              <h4 [class.strike]="task.status === 'COMPLETED'">{{ task.title }}</h4>
+              <span class="streak-req-tag" *ngIf="task.requiredForStreak">🔥 Required</span>
+            </div>
+            <p class="task-desc" *ngIf="task.description">{{ task.description }}</p>
+            <div class="task-meta">
+              <span class="cat-badge">{{ getCategoryIcon(task.category) }} {{ task.category }}</span>
+              <span class="time-badge" *ngIf="task.estimatedMinutes">⏱️ {{ task.estimatedMinutes }} mins</span>
+            </div>
+          </div>
+
+          <div class="task-actions">
+            <button class="btn-icon" (click)="openEditModal(task)" title="Edit Task" [disabled]="!canManageTask(task)">✏️</button>
+            <button class="btn-icon danger" (click)="deleteTask(task)" title="Delete Task" [disabled]="!canManageTask(task)">🗑️</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD / EDIT TASK MODAL -->
+  <div class="modal-backdrop" *ngIf="showAddModal" (click)="showAddModal = false">
+    <div class="modal-card card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ editingTask ? '✏️ Edit Task' : '➕ Add Today\'s Task' }}</h3>
+        <button class="close-btn" (click)="showAddModal = false">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Task Title *</label>
+          <input type="text" [(ngModel)]="newTaskTitle" placeholder="e.g., Solve 2 Java String Problems" autofocus />
+        </div>
+
+        <div class="form-group">
+          <label>Description (Optional)</label>
+          <textarea [(ngModel)]="newTaskDescription" placeholder="Add specific notes, links, or instructions..." rows="3"></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Priority</label>
+            <select [(ngModel)]="newTaskPriority">
+              <option value="HIGH">🔴 High</option>
+              <option value="MEDIUM">🟠 Medium</option>
+              <option value="LOW">🟢 Low</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Category</label>
+            <select [(ngModel)]="newTaskCategory">
+              <option *ngFor="let cat of categories" [value]="cat">
+                {{ getCategoryIcon(cat) }} {{ cat }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Est. Time (Mins)</label>
+            <input type="number" [(ngModel)]="newTaskMinutes" min="5" step="5" />
+          </div>
+
+          <div class="form-group check-group">
+            <label class="checkbox-container">
+              <input type="checkbox" [(ngModel)]="newTaskRequired" />
+              <span class="checkmark"></span>
+              <span class="label-text">🔥 Required for Daily Streak</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="showAddModal = false">Cancel</button>
+        <button class="btn-primary" (click)="saveTask()">
+          {{ editingTask ? 'Save Changes' : 'Create Task' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

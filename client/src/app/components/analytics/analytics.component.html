@@ -1,0 +1,144 @@
+<div class="analytics-container">
+  <header class="card analytics-header">
+    <h2>📊 Productivity Analytics</h2>
+    <p>Comprehensive insights into your task completion rates, categories, and streak performance</p>
+  </header>
+
+  <p class="analytics-state" *ngIf="loadError" role="alert">{{ loadError }}</p>
+  <p class="analytics-state" *ngIf="!analyticsData && !loadError" aria-live="polite">Loading analytics…</p>
+
+  <!-- Key Metrics Row -->
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <span class="icon">📝</span>
+      <div class="metric-info">
+        <span class="value">{{ analyticsData?.totalTasks || 0 }}</span>
+        <span class="label">Total Tasks</span>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <span class="icon">✅</span>
+      <div class="metric-info">
+        <span class="value">{{ analyticsData?.completedTasks || 0 }}</span>
+        <span class="label">Completed</span>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <span class="icon">⏳</span>
+      <div class="metric-info">
+        <span class="value">{{ analyticsData?.pendingTasks || 0 }}</span>
+        <span class="label">Pending</span>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <span class="icon">📈</span>
+      <div class="metric-info">
+        <span class="value">{{ analyticsData?.completionRate || 0 }}%</span>
+        <span class="label">Completion Rate</span>
+      </div>
+    </div>
+
+    <div class="metric-card streak-metric">
+      <span class="icon">🔥</span>
+      <div class="metric-info">
+        <span class="value">{{ authService.currentUserValue?.currentStreak || 0 }}d</span>
+        <span class="label">Current Streak</span>
+      </div>
+    </div>
+
+    <div class="metric-card trophy-metric">
+      <span class="icon">🏆</span>
+      <div class="metric-info">
+        <span class="value">{{ authService.currentUserValue?.longestStreak || 0 }}d</span>
+        <span class="label">Longest Streak</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="analytics-charts-grid">
+    <!-- Weekly Bar Chart -->
+    <div class="card chart-card">
+      <div class="chart-header">
+        <h3>📊 Weekly Completion Rate</h3>
+        <p>Task completion percentage for the current week (Mon-Sun)</p>
+      </div>
+
+      <div class="bar-chart-container">
+        <div class="bar-chart-grid">
+          <div *ngFor="let item of weeklyItems" class="chart-col">
+            <div class="bar-wrapper">
+              <div class="bar-fill-gradient" [style.height.%]="item.rate" [title]="item.completed + '/' + item.total + ' (' + item.rate + '%)'">
+                <span class="bar-rate-text">{{ item.rate }}%</span>
+              </div>
+            </div>
+            <div class="bar-label">{{ item.dayName }}</div>
+            <div class="bar-sub">{{ item.completed }}/{{ item.total }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Priority Statistics -->
+    <div class="card chart-card">
+      <div class="chart-header">
+        <h3>🔴 Priority Statistics</h3>
+        <p>Distribution of tasks across High, Medium, and Low priorities</p>
+      </div>
+
+      <div class="priority-stats-body">
+        <div class="priority-stat-row high">
+          <div class="row-header">
+            <span>🔴 High Priority</span>
+            <strong>{{ analyticsData?.priorityCounts?.HIGH || 0 }} tasks</strong>
+          </div>
+          <div class="stat-progress-track">
+            <div class="stat-progress-bar high" [style.width.%]="analyticsData?.totalTasks ? (analyticsData?.priorityCounts?.HIGH / analyticsData?.totalTasks * 100) : 0"></div>
+          </div>
+        </div>
+
+        <div class="priority-stat-row medium">
+          <div class="row-header">
+            <span>🟠 Medium Priority</span>
+            <strong>{{ analyticsData?.priorityCounts?.MEDIUM || 0 }} tasks</strong>
+          </div>
+          <div class="stat-progress-track">
+            <div class="stat-progress-bar medium" [style.width.%]="analyticsData?.totalTasks ? (analyticsData?.priorityCounts?.MEDIUM / analyticsData?.totalTasks * 100) : 0"></div>
+          </div>
+        </div>
+
+        <div class="priority-stat-row low">
+          <div class="row-header">
+            <span>🟢 Low Priority</span>
+            <strong>{{ analyticsData?.priorityCounts?.LOW || 0 }} tasks</strong>
+          </div>
+          <div class="stat-progress-track">
+            <div class="stat-progress-bar low" [style.width.%]="analyticsData?.totalTasks ? (analyticsData?.priorityCounts?.LOW / analyticsData?.totalTasks * 100) : 0"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Category Distribution -->
+    <div class="card chart-card full-width">
+      <div class="chart-header">
+        <h3>🏷️ Category Distribution</h3>
+        <p>Breakdown of tasks across your productivity categories</p>
+      </div>
+
+      <div class="category-grid">
+        <div *ngFor="let cat of categoryList" class="category-card-item">
+          <div class="cat-top">
+            <span class="cat-title">{{ getCategoryIcon(cat.name) }} {{ cat.name }}</span>
+            <span class="cat-count">{{ cat.count }} tasks ({{ cat.percentage }}%)</span>
+          </div>
+          <div class="cat-bar-track">
+            <div class="cat-bar-fill" [style.width.%]="cat.percentage"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
