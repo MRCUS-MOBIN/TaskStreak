@@ -42,6 +42,7 @@ export class PlanTomorrowComponent implements OnInit {
 
   ngOnInit() {
     this.tomorrowStr = this.taskStorage.getTomorrowStr();
+    this.loadTomorrowTasks();
     this.taskStorage.tasks$.subscribe(() => {
       this.loadTomorrowTasks();
     });
@@ -142,14 +143,17 @@ export class PlanTomorrowComponent implements OnInit {
   }
 
   getCategoryIcon(cat: string): string {
-    switch (cat) {
-      case 'Coding': return '💻';
-      case 'College': return '📚';
-      case 'Project': return '🚀';
-      case 'Placement': return '💼';
-      case 'Fitness': return '🏃';
-      case 'Personal': return '🏠';
-      case 'Learning': return '📖';
+    if (!cat) return '📌';
+    const normalized = cat.trim().toLowerCase();
+    switch (normalized) {
+      case 'coding': return '💻';
+      case 'college': return '📚';
+      case 'project': return '🚀';
+      case 'placement': return '💼';
+      case 'fitness': return '🏃';
+      case 'personal': return '🏠';
+      case 'learning': return '📖';
+      case 'other': return '📁';
       default: return '📌';
     }
   }

@@ -160,11 +160,30 @@ export class TaskStorageService {
   }
 
   public async toggleTaskComplete(taskId: string): Promise<Task | null> {
-    const updated = await firstValueFrom(this.taskApi.completeTask(taskId));
-    const task = this.mapApiTask(updated);
-    this.replaceCachedTask(task);
-    await this.refreshStreakFromApi();
-    return task;
+    const existing = this.currentTasks.find(t => t && t.id === taskId);
+    if (!existing) return null;
+
+    const newStatus = existing.status === 'COMPLETED' ? 'PENDING' : 'COMPLETED';
+    const optimisticTask: Task = {
+      ...existing,
+      status: newStatus,
+      completedAt: newStatus === 'COMPLETED' ? new Date().toISOString() : undefined
+    };
+
+    // Immediately update local UI state (Optimistic)
+    this.replaceCachedTask(optimisticTask);
+    this.recalculateStreak(this.currentTasks);
+
+    try {
+      const updated = await firstValueFrom(this.taskApi.completeTask(taskId));
+      const serverTask = this.mapApiTask(updated);
+      this.replaceCachedTask(serverTask);
+      await this.refreshStreakFromApi();
+      return serverTask;
+    } catch (error) {
+      console.warn('API sync failed, preserving optimistic complete state:', error);
+      return optimisticTask;
+    }
   }
 
   public async updateTask(taskId: string, updates: Partial<Task>): Promise<Task | null> {

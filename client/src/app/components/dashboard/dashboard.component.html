@@ -46,8 +46,8 @@
         <span class="stat-label">Today's Progress</span>
       </div>
       <div class="stat-value">{{ completedTasksCount }} / {{ totalTasksCount }}</div>
-      <div class="stat-footer">
-        <span>{{ pendingTasksCount }} Tasks Pending</span>
+      <div class="stat-footer positive">
+        <span>✅ {{ completedTasksCount }} Task(s) Completed</span>
       </div>
     </div>
 
@@ -141,10 +141,9 @@
       </div>
 
       <div class="task-list">
-        <div *ngFor="let task of highPriorityTasks" class="task-item-card" [class.completed]="task.status === 'COMPLETED'">
-          <div class="task-check">
-            <input type="checkbox" [id]="'check_' + task.id" [checked]="task.status === 'COMPLETED'" (change)="toggleComplete(task)" />
-            <label [for]="'check_' + task.id"></label>
+        <div *ngFor="let task of highPriorityTasks" class="task-item-card" [class.completed]="task.status === 'COMPLETED'" (click)="toggleComplete(task)">
+          <div class="task-check" (click)="$event.stopPropagation(); toggleComplete(task)">
+            <input type="checkbox" [checked]="task.status === 'COMPLETED'" (change)="toggleComplete(task); $event.stopPropagation()" />
           </div>
 
           <div class="task-details">
@@ -159,9 +158,10 @@
             </div>
           </div>
 
-          <div class="task-actions">
-            <button class="btn-icon" (click)="openEditModal(task)" title="Edit Task" [disabled]="!canManageTask(task)">✏️</button>
-            <button class="btn-icon danger" (click)="deleteTask(task)" title="Delete Task" [disabled]="!canManageTask(task)">🗑️</button>
+          <div class="task-actions" (click)="$event.stopPropagation()">
+            <button class="btn-icon" (click)="toggleComplete(task); $event.stopPropagation()" [title]="task.status === 'COMPLETED' ? 'Mark Pending' : 'Complete Task (Strike Out)'">✏️</button>
+            <button class="btn-icon" (click)="openEditModal(task); $event.stopPropagation()" title="Edit Task Details" [disabled]="!canManageTask(task)">📝</button>
+            <button class="btn-icon danger" (click)="deleteTask(task); $event.stopPropagation()" title="Delete Task" [disabled]="!canManageTask(task)">🗑️</button>
           </div>
         </div>
       </div>
@@ -178,10 +178,9 @@
       </div>
 
       <div class="task-list">
-        <div *ngFor="let task of mediumPriorityTasks" class="task-item-card" [class.completed]="task.status === 'COMPLETED'">
-          <div class="task-check">
-            <input type="checkbox" [id]="'check_' + task.id" [checked]="task.status === 'COMPLETED'" (change)="toggleComplete(task)" />
-            <label [for]="'check_' + task.id"></label>
+        <div *ngFor="let task of mediumPriorityTasks" class="task-item-card" [class.completed]="task.status === 'COMPLETED'" (click)="toggleComplete(task)">
+          <div class="task-check" (click)="$event.stopPropagation(); toggleComplete(task)">
+            <input type="checkbox" [checked]="task.status === 'COMPLETED'" (change)="toggleComplete(task); $event.stopPropagation()" />
           </div>
 
           <div class="task-details">
@@ -196,9 +195,10 @@
             </div>
           </div>
 
-          <div class="task-actions">
-            <button class="btn-icon" (click)="openEditModal(task)" title="Edit Task" [disabled]="!canManageTask(task)">✏️</button>
-            <button class="btn-icon danger" (click)="deleteTask(task)" title="Delete Task" [disabled]="!canManageTask(task)">🗑️</button>
+          <div class="task-actions" (click)="$event.stopPropagation()">
+            <button class="btn-icon" (click)="toggleComplete(task); $event.stopPropagation()" [title]="task.status === 'COMPLETED' ? 'Mark Pending' : 'Complete Task (Strike Out)'">✏️</button>
+            <button class="btn-icon" (click)="openEditModal(task); $event.stopPropagation()" title="Edit Task Details" [disabled]="!canManageTask(task)">📝</button>
+            <button class="btn-icon danger" (click)="deleteTask(task); $event.stopPropagation()" title="Delete Task" [disabled]="!canManageTask(task)">🗑️</button>
           </div>
         </div>
       </div>
@@ -215,10 +215,9 @@
       </div>
 
       <div class="task-list">
-        <div *ngFor="let task of lowPriorityTasks" class="task-item-card" [class.completed]="task.status === 'COMPLETED'">
-          <div class="task-check">
-            <input type="checkbox" [id]="'check_' + task.id" [checked]="task.status === 'COMPLETED'" (change)="toggleComplete(task)" />
-            <label [for]="'check_' + task.id"></label>
+        <div *ngFor="let task of lowPriorityTasks" class="task-item-card" [class.completed]="task.status === 'COMPLETED'" (click)="toggleComplete(task)">
+          <div class="task-check" (click)="$event.stopPropagation(); toggleComplete(task)">
+            <input type="checkbox" [checked]="task.status === 'COMPLETED'" (change)="toggleComplete(task); $event.stopPropagation()" />
           </div>
 
           <div class="task-details">
@@ -233,9 +232,10 @@
             </div>
           </div>
 
-          <div class="task-actions">
-            <button class="btn-icon" (click)="openEditModal(task)" title="Edit Task" [disabled]="!canManageTask(task)">✏️</button>
-            <button class="btn-icon danger" (click)="deleteTask(task)" title="Delete Task" [disabled]="!canManageTask(task)">🗑️</button>
+          <div class="task-actions" (click)="$event.stopPropagation()">
+            <button class="btn-icon" (click)="toggleComplete(task); $event.stopPropagation()" [title]="task.status === 'COMPLETED' ? 'Mark Pending' : 'Complete Task (Strike Out)'">✏️</button>
+            <button class="btn-icon" (click)="openEditModal(task); $event.stopPropagation()" title="Edit Task Details" [disabled]="!canManageTask(task)">📝</button>
+            <button class="btn-icon danger" (click)="deleteTask(task); $event.stopPropagation()" title="Delete Task" [disabled]="!canManageTask(task)">🗑️</button>
           </div>
         </div>
       </div>

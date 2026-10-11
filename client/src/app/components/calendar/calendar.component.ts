@@ -30,6 +30,7 @@ export class CalendarComponent implements OnInit {
   constructor(public taskStorage: TaskStorageService) {}
 
   ngOnInit() {
+    this.generateCalendar();
     this.taskStorage.tasks$.subscribe(() => {
       this.generateCalendar();
       if (this.selectedDayProgress) {
@@ -122,6 +123,15 @@ export class CalendarComponent implements OnInit {
     this.selectedDayProgress = this.taskStorage.getDayProgress(dateStr);
     this.selectedDayTasks = this.taskStorage.getTasks(dateStr);
     this.showDayModal = true;
+  }
+
+  async toggleTask(task: Task) {
+    if (!task.id) return;
+    await this.taskStorage.toggleTaskComplete(task.id);
+    if (this.selectedDayProgress) {
+      this.selectedDayTasks = this.taskStorage.getTasks(this.selectedDayProgress.date);
+      this.selectedDayProgress = this.taskStorage.getDayProgress(this.selectedDayProgress.date);
+    }
   }
 
   closeModal() {

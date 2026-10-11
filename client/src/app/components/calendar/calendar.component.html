@@ -37,7 +37,11 @@
         class="day-cell"
         [class.other-month]="!day.isCurrentMonth"
         [class.today]="day.isToday"
-        [class]="getStatusBadgeClass(day.progress.status)"
+        [class.selected]="selectedDayProgress?.date === day.dateStr && showDayModal"
+        [class.status-full]="day.progress.status === 'FULL'"
+        [class.status-partial]="day.progress.status === 'PARTIAL'"
+        [class.status-missed]="day.progress.status === 'MISSED'"
+        [class.status-empty]="day.progress.status === 'EMPTY'"
         (click)="selectDate(day.dateStr)"
       >
         <div class="day-num-row">
@@ -92,6 +96,9 @@
 
         <div class="day-task-list" *ngIf="selectedDayTasks.length > 0">
           <div *ngFor="let task of selectedDayTasks" class="task-item-card" [class.completed]="task.status === 'COMPLETED'">
+            <div class="task-check" (click)="toggleTask(task)">
+              <input type="checkbox" [checked]="task.status === 'COMPLETED'" readonly />
+            </div>
             <div class="task-details">
               <div class="task-title-row">
                 <span class="priority-dot" [class.high]="task.priority === 'HIGH'" [class.medium]="task.priority === 'MEDIUM'" [class.low]="task.priority === 'LOW'"></span>
@@ -102,7 +109,7 @@
               <div class="task-meta">
                 <span>{{ task.category }}</span>
                 <span>⏱️ {{ task.estimatedMinutes }} mins</span>
-                <span class="status-tag" [class.done]="task.status === 'COMPLETED'">
+                <span class="status-tag" [class.done]="task.status === 'COMPLETED'" (click)="toggleTask(task)" style="cursor: pointer;">
                   {{ task.status === 'COMPLETED' ? '✅ Completed' : '⏳ Pending' }}
                 </span>
               </div>

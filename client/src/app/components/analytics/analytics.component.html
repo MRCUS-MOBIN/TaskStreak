@@ -95,7 +95,7 @@
             <strong>{{ analyticsData?.priorityCounts?.HIGH || 0 }} tasks</strong>
           </div>
           <div class="stat-progress-track">
-            <div class="stat-progress-bar high" [style.width.%]="analyticsData?.totalTasks ? (analyticsData?.priorityCounts?.HIGH / analyticsData?.totalTasks * 100) : 0"></div>
+            <div class="stat-progress-bar high" [style.width.%]="getPriorityPercentage('HIGH')"></div>
           </div>
         </div>
 
@@ -105,7 +105,7 @@
             <strong>{{ analyticsData?.priorityCounts?.MEDIUM || 0 }} tasks</strong>
           </div>
           <div class="stat-progress-track">
-            <div class="stat-progress-bar medium" [style.width.%]="analyticsData?.totalTasks ? (analyticsData?.priorityCounts?.MEDIUM / analyticsData?.totalTasks * 100) : 0"></div>
+            <div class="stat-progress-bar medium" [style.width.%]="getPriorityPercentage('MEDIUM')"></div>
           </div>
         </div>
 
@@ -115,7 +115,7 @@
             <strong>{{ analyticsData?.priorityCounts?.LOW || 0 }} tasks</strong>
           </div>
           <div class="stat-progress-track">
-            <div class="stat-progress-bar low" [style.width.%]="analyticsData?.totalTasks ? (analyticsData?.priorityCounts?.LOW / analyticsData?.totalTasks * 100) : 0"></div>
+            <div class="stat-progress-bar low" [style.width.%]="getPriorityPercentage('LOW')"></div>
           </div>
         </div>
       </div>

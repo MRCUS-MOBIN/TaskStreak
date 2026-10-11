@@ -23,6 +23,7 @@ export class AnalyticsComponent implements OnInit, OnDestroy {
   } | null = null;
   loadError = '';
   private tasksSubscription?: Subscription;
+  private analyticsSub?: Subscription;
 
   constructor(
     public taskStorage: TaskStorageService,
@@ -36,10 +37,12 @@ export class AnalyticsComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.tasksSubscription?.unsubscribe();
+    this.analyticsSub?.unsubscribe();
   }
 
   loadAnalytics() {
-    forkJoin({
+    this.analyticsSub?.unsubscribe();
+    this.analyticsSub = forkJoin({
       weekly: this.taskApi.getWeeklyAnalytics(),
       categories: this.taskApi.getCategoryAnalytics(),
       priorities: this.taskApi.getPriorityAnalytics()
@@ -53,8 +56,14 @@ export class AnalyticsComponent implements OnInit, OnDestroy {
         this.loadError = '';
       },
       error: () => {
-        this.analyticsData = null;
-        this.loadError = 'Analytics are unavailable. Check the API connection and try again.';
+        const localAnalytics = this.taskStorage.getAnalytics();
+        if (localAnalytics && localAnalytics.totalTasks > 0) {
+          this.analyticsData = localAnalytics;
+          this.loadError = '';
+        } else {
+          this.analyticsData = null;
+          this.loadError = 'Analytics are unavailable. Check the API connection and try again.';
+        }
       }
     });
   }
@@ -62,7 +71,8 @@ export class AnalyticsComponent implements OnInit, OnDestroy {
   get categoryList(): { name: string; count: number; percentage: number }[] {
     if (!this.analyticsData || !this.analyticsData.categoryCounts) return [];
 
-    const total = this.analyticsData.totalTasks || 1;
+    const categorySum = Object.values(this.analyticsData.categoryCounts).reduce((a, b) => a + (b || 0), 0);
+    const total = this.analyticsData.totalTasks || categorySum || 1;
     return Object.entries(this.analyticsData.categoryCounts).map(([name, count]) => {
       const cnt = count as number;
       return {
@@ -77,15 +87,24 @@ export class AnalyticsComponent implements OnInit, OnDestroy {
     return this.analyticsData?.weeklyData || [];
   }
 
+  getPriorityPercentage(priority: 'HIGH' | 'MEDIUM' | 'LOW'): number {
+    if (!this.analyticsData || !this.analyticsData.totalTasks || !this.analyticsData.priorityCounts) return 0;
+    const count = this.analyticsData.priorityCounts[priority] || 0;
+    return Math.round((count / this.analyticsData.totalTasks) * 100);
+  }
+
   getCategoryIcon(cat: string): string {
-    switch (cat) {
-      case 'Coding': return '💻';
-      case 'College': return '📚';
-      case 'Project': return '🚀';
-      case 'Placement': return '💼';
-      case 'Fitness': return '🏃';
-      case 'Personal': return '🏠';
-      case 'Learning': return '📖';
+    if (!cat) return '📌';
+    const normalized = cat.trim().toLowerCase();
+    switch (normalized) {
+      case 'coding': return '💻';
+      case 'college': return '📚';
+      case 'project': return '🚀';
+      case 'placement': return '💼';
+      case 'fitness': return '🏃';
+      case 'personal': return '🏠';
+      case 'learning': return '📖';
+      case 'other': return '📁';
       default: return '📌';
     }
   }

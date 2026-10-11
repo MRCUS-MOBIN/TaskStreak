@@ -157,17 +157,18 @@ export class DashboardComponent implements OnInit {
 
   async toggleComplete(task: Task) {
     try {
-    const updated = await this.taskStorage.toggleTaskComplete(task.id);
-    if (updated) {
-      if (updated.status === 'COMPLETED') {
-        this.notify.showToast(`Completed: ${updated.title} 🎉`, 'success');
-        if (this.isStreakEarned) {
-          this.notify.showToast('🔥 All required tasks complete! Streak incremented!', 'success');
+      const updated = await this.taskStorage.toggleTaskComplete(task.id);
+      if (updated) {
+        if (updated.status === 'COMPLETED') {
+          const completedCount = this.completedTasksCount;
+          this.notify.showToast(`🎉 ${completedCount} Task${completedCount !== 1 ? 's' : ''} Completed!`, 'success');
+          if (this.isStreakEarned) {
+            this.notify.showToast('🔥 All required tasks complete! Streak incremented!', 'success');
+          }
+        } else {
+          this.notify.showToast(`Marked as pending: ${updated.title}`, 'info');
         }
-      } else {
-        this.notify.showToast(`Marked as pending: ${updated.title}`, 'info');
       }
-    }
     } catch {
       this.notify.showToast('Could not update task. Check the API connection.', 'error');
     }
@@ -258,14 +259,17 @@ export class DashboardComponent implements OnInit {
   }
 
   getCategoryIcon(cat: string): string {
-    switch (cat) {
-      case 'Coding': return '💻';
-      case 'College': return '📚';
-      case 'Project': return '🚀';
-      case 'Placement': return '💼';
-      case 'Fitness': return '🏃';
-      case 'Personal': return '🏠';
-      case 'Learning': return '📖';
+    if (!cat) return '📌';
+    const normalized = cat.trim().toLowerCase();
+    switch (normalized) {
+      case 'coding': return '💻';
+      case 'college': return '📚';
+      case 'project': return '🚀';
+      case 'placement': return '💼';
+      case 'fitness': return '🏃';
+      case 'personal': return '🏠';
+      case 'learning': return '📖';
+      case 'other': return '📁';
       default: return '📌';
     }
   }
